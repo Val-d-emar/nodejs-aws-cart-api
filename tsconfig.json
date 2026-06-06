@@ -10,9 +10,12 @@
     "sourceMap": true,
     "outDir": "./dist",
     "rootDir": "./",
-    "baseUrl": "./",
     "incremental": true,
-    "ignoreDeprecations": "6.0"
+    "paths": {
+      "src/*": [
+        "./src/*"
+      ]
+    },
   },
   "include": [
     "src/**/*",

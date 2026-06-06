@@ -15,6 +15,10 @@ export class CdkStack extends cdk.Stack {
       handler: 'handler',
       memorySize: 512,
       timeout: cdk.Duration.seconds(15),
+
+      projectRoot: path.join(__dirname, '../../'),
+      depsLockFilePath: path.join(__dirname, '../../package-lock.json'),
+
       bundling: {
         minify: true,
         sourceMap: true,
