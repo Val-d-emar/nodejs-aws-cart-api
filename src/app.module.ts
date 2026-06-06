@@ -32,6 +32,10 @@ import { ConfigService } from '@nestjs/config';
         entities: [CartEntity, CartItemEntity],
         synchronize: false,
         logging: true,
+        ssl:
+          configService.get<string>('DB_HOST') !== 'localhost'
+            ? { rejectUnauthorized: false }
+            : false,
       }),
     }),
   ],
