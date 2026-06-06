@@ -58,6 +58,7 @@ export class CdkStack extends cdk.Stack {
       bundling: {
         minify: true,
         sourceMap: true,
+        tsconfig: path.join(__dirname, '../../tsconfig.json'),
         externalModules: [
           '@nestjs/websockets/socket-module',
           '@nestjs/microservices/microservices-module',
