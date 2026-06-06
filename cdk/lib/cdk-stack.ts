@@ -22,6 +22,13 @@ export class CdkStack extends cdk.Stack {
       bundling: {
         minify: true,
         sourceMap: true,
+        externalModules: [
+          '@nestjs/websockets/socket-module',
+          '@nestjs/microservices/microservices-module',
+          '@nestjs/microservices',
+          'class-validator',
+          'class-transformer',
+        ],
       },
     });
 
