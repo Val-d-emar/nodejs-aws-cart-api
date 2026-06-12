@@ -1,7 +1,6 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
-import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as path from 'path';
@@ -31,21 +30,35 @@ export class CdkStack extends cdk.Stack {
 
     const dbPort = process.env.DB_PORT || '5432';
 
-    const cartApiLambda = new NodejsFunction(this, 'CartApiLambda', {
+    const cartApiLambda = new lambda.Function(this, 'CartApiLambda', {
       runtime: lambda.Runtime.NODEJS_24_X,
-      entry: path.join(__dirname, '../../src/main.serverless.ts'),
-      handler: 'handler',
+      code: lambda.Code.fromAsset(path.join(__dirname, '../../'), {
+        exclude: [
+          'cdk',
+          'README.md',
+          '.git',
+          'tsconfig.json',
+          'tsconfig.build.json',
+          'nest-cli.json',
+          'node_modules/typescript',
+          'node_modules/jest',
+          'node_modules/eslint',
+          'node_modules/prettier',
+          'node_modules/@nestjs/cli',
+          'node_modules/@nestjs/schematics',
+          'node_modules/@types',
+          'node_modules/esbuild',
+        ],
+      }),
+      handler: 'dist/src/lambda.handler',
+
       memorySize: 512,
       timeout: cdk.Duration.seconds(15),
-
       vpc,
       vpcSubnets: {
         subnetType: ec2.SubnetType.PUBLIC,
       },
       allowPublicSubnet: true,
-
-      projectRoot: path.join(__dirname, '../../'),
-      depsLockFilePath: path.join(__dirname, '../../package-lock.json'),
 
       environment: {
         DB_HOST: dbHost,
@@ -53,19 +66,6 @@ export class CdkStack extends cdk.Stack {
         DB_USERNAME: dbUser,
         DB_PASSWORD: dbPassword,
         DB_DATABASE: dbDatabase,
-      },
-
-      bundling: {
-        minify: true,
-        sourceMap: true,
-        tsconfig: path.join(__dirname, '../../tsconfig.json'),
-        externalModules: [
-          '@nestjs/websockets/socket-module',
-          '@nestjs/microservices/microservices-module',
-          '@nestjs/microservices',
-          'class-validator',
-          'class-transformer',
-        ],
       },
     });
 

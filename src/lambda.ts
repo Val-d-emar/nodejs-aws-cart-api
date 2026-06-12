@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import serverlessExpress from '@vendia/serverless-express';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const serverlessExpress = require('@vendia/serverless-express');
 import { Context, Handler } from 'aws-lambda';
 
 let server: any;
@@ -21,6 +22,14 @@ async function bootstrap(): Promise<Handler> {
 }
 
 export const handler: Handler = async (event: any, context: Context) => {
+  context.callbackWaitsForEmptyEventLoop = false;
   server = server ?? (await bootstrap());
-  return server(event, context);
+  return new Promise((resolve, reject) => {
+    server(event, context, (err: any, result: any) => {
+      if (err) {
+        return reject(err);
+      }
+      resolve(result);
+    });
+  });
 };
