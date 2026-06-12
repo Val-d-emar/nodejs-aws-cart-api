@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { Cart, CartStatuses } from '../models';
 import { CartEntity } from '../entities/cart.entity';
 import { CartItemEntity } from '../entities/cart-item.entity';
-import { PutCartPayload } from 'src/order/type';
+import { PutCartPayload } from '../../order/type';
 
 @Injectable()
 export class CartService {
