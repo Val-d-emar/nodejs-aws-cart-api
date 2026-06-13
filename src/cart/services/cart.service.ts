@@ -36,10 +36,7 @@ export class CartService {
         delivery: { type: 'post', address: payload.address },
         comments: '',
         status: 'ORDERED',
-        total: cart.items.reduce(
-          (acc, item) => acc + item.product.price * item.count,
-          0,
-        ),
+        total: (payload as any).total || 0, 
       });
 
       const savedOrder = await manager.save(order);
@@ -63,7 +60,7 @@ export class CartService {
               id: item.productId,
               title: 'Database Product',
               description: 'Loaded from PostgreSQL',
-              price: 100,
+              price: 0,
             },
             count: item.count,
           }))
