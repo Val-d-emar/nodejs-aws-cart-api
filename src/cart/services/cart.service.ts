@@ -5,6 +5,9 @@ import { Cart, CartStatuses } from '../models';
 import { CartEntity } from '../entities/cart.entity';
 import { CartItemEntity } from '../entities/cart-item.entity';
 import { PutCartPayload } from '../../order/type';
+import { DataSource } from 'typeorm';
+import { OrderEntity } from '../../order/entities/order.entity';
+import { CreateOrderDto } from '../../order/type';
 
 @Injectable()
 export class CartService {
@@ -13,7 +16,39 @@ export class CartService {
     private readonly cartRepository: Repository<CartEntity>,
     @InjectRepository(CartItemEntity)
     private readonly cartItemRepository: Repository<CartItemEntity>,
+    private readonly dataSource: DataSource,
   ) {}
+
+  async checkout(
+    userId: string,
+    payload: CreateOrderDto,
+  ): Promise<OrderEntity> {
+    const cart = await this.findByUserId(userId);
+    if (!cart || cart.items.length === 0) {
+      throw new Error('Cart is empty');
+    }
+
+    return await this.dataSource.transaction(async (manager) => {
+      const order = manager.create(OrderEntity, {
+        userId,
+        cartId: cart.id,
+        payment: { type: 'paypal' }, // Mock payment
+        delivery: { type: 'post', address: payload.address },
+        comments: '',
+        status: 'ORDERED',
+        total: cart.items.reduce(
+          (acc, item) => acc + item.product.price * item.count,
+          0,
+        ),
+      });
+
+      const savedOrder = await manager.save(order);
+
+      await manager.update(CartEntity, { id: cart.id }, { status: 'ORDERED' });
+
+      return savedOrder;
+    });
+  }
 
   private mapEntityToModel(cartEntity: CartEntity): Cart {
     return {
