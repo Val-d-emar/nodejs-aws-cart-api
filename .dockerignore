@@ -1,0 +1,14 @@
+node_modules/
+
+npm-debug.log
+cdk.out/
+dist/
+
+cdk/
+.git/
+.github/
+
+.env
+README.md
+get-token.sh
+greate.sql
