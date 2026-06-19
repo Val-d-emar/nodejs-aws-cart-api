@@ -1,0 +1,129 @@
+openapi: 3.0.0
+info:
+  title: Cart & Checkout Service API
+  description: API for managing user shopping carts and checkout/orders with PostgreSQL
+  version: 1.0.0
+servers:
+  - url: https://4nyjlii0ai.execute-api.eu-north-1.amazonaws.com/prod
+    description: Card-API
+paths:
+  /api/profile/cart:
+    get:
+      summary: Get active user cart
+      security:
+        - BasicAuth: []
+      responses:
+        '200':
+          description: Active cart details
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CartItem'
+        '401':
+          description: Unauthorized
+    put:
+      summary: Add or update item in cart
+      security:
+        - BasicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PutCartRequest'
+      responses:
+        '200':
+          description: Updated cart items list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CartItem'
+        '401':
+          description: Unauthorized
+    delete:
+      summary: Clear active user cart
+      security:
+        - BasicAuth: []
+      responses:
+        '200':
+          description: Cart cleared successfully
+        '401':
+          description: Unauthorized
+
+  /api/profile/cart/order:
+    put:
+      summary: Checkout active cart and create an order (Transaction-based)
+      security:
+        - BasicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [address]
+              properties:
+                address:
+                  type: string
+                  example: "Test Street 123"
+      responses:
+        '200':
+          description: Order created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
+        '400':
+          description: Cart is empty or invalid data
+        '401':
+          description: Unauthorized
+
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+  schemas:
+    Product:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        description: { type: string }
+        price: { type: number }
+    CartItem:
+      type: object
+      properties:
+        product:
+          $ref: '#/components/schemas/Product'
+        count:
+          type: number
+    PutCartRequest:
+      type: object
+      required: [product, count]
+      properties:
+        product:
+          type: object
+          required: [id]
+          properties:
+            id: { type: string, format: uuid }
+        count:
+          type: number
+    OrderResponse:
+      type: object
+      properties:
+        order:
+          type: object
+          properties:
+            id: { type: string, format: uuid }
+            userId: { type: string, format: uuid }
+            cartId: { type: string, format: uuid }
+            payment: { type: object }
+            delivery: { type: object }
+            comments: { type: string }
+            status: { type: string }
+            total: { type: number }
