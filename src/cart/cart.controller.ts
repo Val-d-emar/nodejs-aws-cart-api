@@ -76,7 +76,7 @@ export class CartController {
 
   @UseGuards(BasicAuthGuard)
   @Get('order')
-  getOrder(): Order[] {
-    return this.orderService.getAll();
+  async getOrder(): Promise<Order[]> {
+    return await this.orderService.getAll();
   }
 }

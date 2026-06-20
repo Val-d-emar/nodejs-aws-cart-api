@@ -36,7 +36,7 @@ export class CartService {
         delivery: { type: 'post', address: payload.address },
         comments: '',
         status: 'ORDERED',
-        total: (payload as any).total || 0, 
+        total: (payload as any).total || 0,
       });
 
       const savedOrder = await manager.save(order);

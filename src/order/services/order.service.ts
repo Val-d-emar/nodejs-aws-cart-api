@@ -1,50 +1,78 @@
 import { Injectable } from '@nestjs/common';
-import { randomUUID } from 'node:crypto';
 import { Order } from '../models';
-import { CreateOrderPayload, OrderStatus } from '../type';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { OrderEntity } from '../entities/order.entity';
 
 @Injectable()
 export class OrderService {
-  private orders: Record<string, Order> = {};
+  constructor(
+    @InjectRepository(OrderEntity)
+    private readonly orderRepository: Repository<OrderEntity>,
+  ) {}
 
-  getAll() {
-    return Object.values(this.orders);
+  async getAll(): Promise<Order[]> {
+    const orders = await this.orderRepository.find({
+      relations: ['cart', 'cart.items'], // Подтягиваем связи, чтобы посчитать количество товаров (items count)
+    });
+
+    return orders.map((order) => this.mapEntityToModel(order));
   }
 
-  findById(orderId: string): Order {
-    return this.orders[orderId];
-  }
-
-  create(data: CreateOrderPayload) {
-    const id = randomUUID() as string;
-    const order: Order = {
-      id,
-      ...data,
+  private mapEntityToModel(orderEntity: OrderEntity): any {
+    return {
+      id: orderEntity.id,
+      userId: orderEntity.userId,
+      cartId: orderEntity.cartId,
+      payment: orderEntity.payment,
+      delivery: orderEntity.delivery,
+      comments: orderEntity.comments || '',
+      status: orderEntity.status,
+      total: Number(orderEntity.total),
+      address: orderEntity.delivery?.address || orderEntity.delivery || {},
+      items: orderEntity.cart?.items
+        ? orderEntity.cart.items.map((i) => ({
+            productId: i.productId,
+            count: i.count,
+          }))
+        : [],
       statusHistory: [
         {
-          comment: '',
-          status: OrderStatus.Open,
+          status: orderEntity.status,
           timestamp: Date.now(),
+          comment: 'Loaded from Database',
         },
       ],
     };
-
-    this.orders[id] = order;
-
-    return order;
   }
 
-  // TODO add  type
-  update(orderId: string, data: Order) {
-    const order = this.findById(orderId);
+  async findById(orderId: string): Promise<Order | null> {
+    const order = await this.orderRepository.findOne({
+      where: { id: orderId },
+      relations: ['cart', 'cart.items'],
+    });
 
     if (!order) {
-      throw new Error('Order does not exist.');
+      throw new Error('Order not found.');
     }
 
-    this.orders[orderId] = {
+    return this.mapEntityToModel(order);
+  }
+
+  async update(orderId: string, data: any): Promise<Order> {
+    const order = await this.orderRepository.findOne({
+      where: { id: orderId },
+    });
+
+    if (!order) {
+      throw new Error('Order not found.');
+    }
+
+    const updatedOrder = await this.orderRepository.save({
+      ...order,
       ...data,
-      id: orderId,
-    };
+    });
+
+    return this.mapEntityToModel(updatedOrder);
   }
 }
