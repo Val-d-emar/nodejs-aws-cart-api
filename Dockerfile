@@ -11,6 +11,8 @@ RUN npm ci
 
 COPY . .
 
+ENV NODE_OPTIONS="--max-old-space-size=450"
+
 RUN npm run build
 
 # ==========================================
