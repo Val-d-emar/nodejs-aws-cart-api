@@ -4,8 +4,8 @@ info:
   description: API for managing user shopping carts and checkout/orders with PostgreSQL
   version: 1.0.0
 servers:
-  - url: https://4nyjlii0ai.execute-api.eu-north-1.amazonaws.com/prod
-    description: Card-API
+  - url: https://d1nht5hp218c9h.cloudfront.net
+    description: Production server (Elastic Beanstalk via CloudFront)
 paths:
   /api/profile/cart:
     get:

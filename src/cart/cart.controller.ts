@@ -6,6 +6,7 @@ import {
   Body,
   Req,
   UseGuards,
+  Param,
   HttpStatus,
   HttpCode,
   BadRequestException,
@@ -76,7 +77,26 @@ export class CartController {
 
   @UseGuards(BasicAuthGuard)
   @Get('order')
-  getOrder(): Order[] {
-    return this.orderService.getAll();
+  async getOrder(): Promise<Order[]> {
+    return await this.orderService.getAll();
+  }
+
+  @UseGuards(BasicAuthGuard)
+  @Get('order/:id')
+  async getOrderById(@Param('id') id: string) {
+    return await this.orderService.findById(id);
+  }
+
+  @UseGuards(BasicAuthGuard)
+  @Put('order/:id/status')
+  async updateOrderStatus(@Param('id') id: string, @Body() body: any) {
+    return await this.orderService.update(id, body);
+  }
+
+  @UseGuards(BasicAuthGuard)
+  @Delete('order/:id')
+  async deleteOrder(@Param('id') id: string) {
+    await this.orderService.delete(id);
+    return { success: true };
   }
 }
