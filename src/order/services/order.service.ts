@@ -75,4 +75,13 @@ export class OrderService {
 
     return this.mapEntityToModel(updatedOrder);
   }
+
+  async delete(orderId: string): Promise<void> {
+    const order = await this.orderRepository.findOne({
+      where: { id: orderId },
+    });
+    if (order) {
+      await this.orderRepository.remove(order);
+    }
+  }
 }
